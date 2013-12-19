@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="DataForm.js"></script>
+	</head>
+	<body>
+		<form id="test-form" data-perform-form="test-form">
+			<input type="text" name="username" placeholder="Username">
+			<input type="password" name="password" placeholder="Password">
+			<input type="submit" value="Login to site A" data-perform-actions="http://a.site.com" data-perform-methods="get" data-perform-types="ajax" data-perform-targets="#test-target">
+			<input type="submit" value="Login to site B" data-perform-action="http://b.site.com" data-perform-method="post" data-perform-type="normal">
+		</form>
+		<div id="test-target">
+			
+		</div>
+	</body>
+</html>
