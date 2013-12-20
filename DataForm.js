@@ -12,79 +12,88 @@
  * By: Justin King and Scott Robinson
  *****************************************/
 
-$(function {
-	var perform = {
-	//The perform model
-	form: {
-		name: "",
-		submits: []
-	},
-	submit: {
-		actions: [],
-		methods: [],
-		types: [],
-		targets: []
-		befores: [],
-		afters: []
-	}	
-	//The perform collection to hold all of the models for the current page
-	collection: [],
-	parse: function () {	
-		$('form[data-perform-form]').each(function () { 
-			var model = new perform.model;
-			var $this = $(this);
-			model.name = getFormName($this);
-			model.submits = getSubmits($this);
-			perform.collection.push(model);
-		});
-	},
-	reset: function () {
-		perform.collection = [];
-	},
-	getFormName: function (form) {
-		return form.attr('data-perform-form');
-	},
-	getSubmits: function (form) {
-		var submits = [];
-		form.find('[data-perform-action]').each(function () {
-			var submit = new perform.submit;
-			submit.actions = perform.getActions($(this));
-			submit.methods = perform.getMethods($(this));
-			submit.types = perfom.getTypes($(this));
-			submit.targets = perform.getTargets($(this));
-			submit.befores = perform.getBefores($(this));
-			submit.afters = perform.getAfters($(this));
-			submits.push(submit);
-		});
-		return submits;
-	},
-	getActions: function (submit) {
-		return submit.attr('data-perform-actions').split(',');
-	},
-	getMethods: function (submit) {
-		return submit.attr('data-perform-methods').split(',');
-	},
-	getTypes: function (submit) {
-		return submit.attr('data-perform-types').split(',');
-	},
-	getTargets: function (submit) {
-		return submit.attr('data-perform-targets').split(',');
-	},
-	getBefores: function (submit) {
-		return submit.attr('data-perform-before').split(',');
-	},
-	getAfters: function (submit) {
-		return submit.attr('data-performs-after').split(',');
-	}
-});	
+$(function () {
+    "use strict";
+    var perform = {
+        //The perform model
+        model: {
+            object: {},
+            formids: [],
+            events: [],
+            actions: [],
+            methods: [],
+            types: [],
+            targets: [],
+            befores: [],
+            afters: []
+        },
+        //The perform collection to hold all of the models for the current page
+        collection: [],
+        current: {},
+        parse: function () {
+            $('[data-perform-events]').each(function () {
+                var model = perform.model;
+                model.object = $(this);
+                model.formids = perform.getForms(model.object);
+                model.events = perform.getEvents(model.object);
+                model.actions = perform.getActions(model.object);
+                model.methods = perform.getMethods(model.object);
+                model.types = perform.getTypes(model.object);
+                model.targets = perform.getTargets(model.object);
+                model.befores = perform.getBefores(model.object);
+                model.afters = perform.getAfters(model.object);
+                perform.collection.push(model);
+            });
+            perform.binder();
+        },
+        binder: function () {
+            for (var i = 0; i < perform.collection.length; i++) {
+                perform.current = perform.collection[i];
+                for (var q = 0; q < perform.current.events.length; q++) {
+                    perform.bind(perform.current, q);
+                }
+            }
+        },
+        bind: function (item, q) {
 
-$('[data-perForm-type]').change(function () {
-    if ($(this).attr('data-perForm-bFunction')) window[$(this).attr('data-perForm-bFunction')]();
-    if ($(this).attr('data-perForm-type') == "AjaxUpdate") {
-        $("#" + $(this).attr('data-perForm-target')).load($(this).attr('data-perForm-location'), $("#" + $(this).attr('data-perForm-form')).serializeArray());
-    }
-    if ($(this).attr('data-perForm-type') == "Form") {
-        $("#" + $(this).attr('data-perForm-form')).submit();
-	}
-    if ($(this).attr('data-perForm-aFunction')) window[$(this).attr('data-perForm-aFunction')]();
+            $(item.object).off(item.events[q]).on(item.events[q], function () {
+                var stuff = $.ajax({
+                    url: item.actions[q],
+                    type: item.methods[q],
+                    data: $(item.formids[q]).serializeArray()
+                });
+                $(item.targets[q]).html(stuff);
+            });
+
+        },
+        reset: function () {
+            perform.collection = [];
+        },
+        getForms: function (form) {
+            return form.attr('data-perform-forms').split(',');
+        },
+        getEvents: function (submit) {
+            return submit.attr('data-perform-events').split(',');
+        },
+        getActions: function (submit) {
+            return submit.attr('data-perform-actions').split(',');
+        },
+        getMethods: function (submit) {
+            return submit.attr('data-perform-methods').split(',');
+        },
+        getTypes: function (submit) {
+            return submit.attr('data-perform-types').split(',');
+        },
+        getTargets: function (submit) {
+            return submit.attr('data-perform-targets').split(',');
+        },
+        getBefores: function (submit) {
+            //return submit.attr('data-perform-before').split(',');
+        },
+        getAfters: function (submit) {
+            //return submit.attr('data-performs-after').split(',');
+        }
+    };
+
+    perform.parse();
 });
