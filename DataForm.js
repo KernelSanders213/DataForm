@@ -20,6 +20,8 @@ $(function {
 		submits: []
 	},
 	submit: {
+		ids:[],
+		events: [],
 		actions: [],
 		methods: [],
 		types: [],
@@ -29,6 +31,7 @@ $(function {
 	}	
 	//The perform collection to hold all of the models for the current page
 	collection: [],
+	current: {},
 	parse: function () {	
 		$('form[data-perform-form]').each(function () { 
 			var model = new perform.model;
@@ -37,6 +40,26 @@ $(function {
 			model.submits = getSubmits($this);
 			perform.collection.push(model);
 		});
+		perform.binder();
+	},
+	binder: function () {
+		for(var i = 0; i < perform.collection.length; i++) {
+			perform.current = perform.collection[i];
+			for(var j = 0; j < perform.current.submits.length; j++) {
+				perform.bind(perform.current.submits[j]);
+			}
+		}
+	},
+	bind: function (item) {
+		for(var q = 0; q < item.events.length; q++) {
+			$(ids[q]).off(item.events[q]).on(item.events[q], function () {
+				var stuff = $.ajax({
+					url: item.actions[q],
+					type: item.methods[q]
+				});
+				$(item.targets[q]).html(stuff);
+			}
+		}
 	},
 	reset: function () {
 		perform.collection = [];
@@ -46,17 +69,23 @@ $(function {
 	},
 	getSubmits: function (form) {
 		var submits = [];
-		form.find('[data-perform-action]').each(function () {
-			var submit = new perform.submit;
-			submit.actions = perform.getActions($(this));
-			submit.methods = perform.getMethods($(this));
-			submit.types = perfom.getTypes($(this));
-			submit.targets = perform.getTargets($(this));
-			submit.befores = perform.getBefores($(this));
-			submit.afters = perform.getAfters($(this));
-			submits.push(submit);
+		$('[data-perform-events]').each(function () {
+			if ($(this).attr('data-perform-form') == form.name){
+				var submit = new perform.submit;
+				submit.events = perform.getEvents($(this));
+				submit.actions = perform.getActions($(this));
+				submit.methods = perform.getMethods($(this));
+				submit.types = perfom.getTypes($(this));
+				submit.targets = perform.getTargets($(this));
+				submit.befores = perform.getBefores($(this));
+				submit.afters = perform.getAfters($(this));
+				submits.push(submit);
+			}
 		});
 		return submits;
+	},
+	getEvents: function (submit) {
+		return submit.attr('data-perform-events').split(',');	
 	},
 	getActions: function (submit) {
 		return submit.attr('data-perform-actions').split(',');
@@ -78,7 +107,11 @@ $(function {
 	}
 });	
 
-$('[data-perForm-type]').change(function () {
+perform.parse();
+
+
+
+$('[data-perForm-type]').on()(function () {
     if ($(this).attr('data-perForm-bFunction')) window[$(this).attr('data-perForm-bFunction')]();
     if ($(this).attr('data-perForm-type') == "AjaxUpdate") {
         $("#" + $(this).attr('data-perForm-target')).load($(this).attr('data-perForm-location'), $("#" + $(this).attr('data-perForm-form')).serializeArray());
