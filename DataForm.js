@@ -11,10 +11,11 @@
  * Version:  0.2
  * By: Justin King and Scott Robinson
  *****************************************/
+var perform = perform || {};
 
 $(function () {
     "use strict";
-    var perform = {
+    perform = {
         //The perform model
         model: {
             object: {},
@@ -31,17 +32,18 @@ $(function () {
         collection: [],
         current: {},
         parse: function () {
-            $('[data-perform-events]').each(function () {
-                var model = perform.model;
-                model.object = $(this);
-                model.formids = perform.getForms(model.object);
-                model.events = perform.getEvents(model.object);
-                model.actions = perform.getActions(model.object);
-                model.methods = perform.getMethods(model.object);
-                model.types = perform.getTypes(model.object);
-                model.targets = perform.getTargets(model.object);
-                model.befores = perform.getBefores(model.object);
-                model.afters = perform.getAfters(model.object);
+            $('[data-perform-events]').each(function () {             
+                var model = {
+                    object : $(this),
+                    formids : perform.getForms($(this)),
+                    events : perform.getEvents($(this)),
+                    actions : perform.getActions($(this)),
+                    methods : perform.getMethods($(this)),
+                    types : perform.getTypes($(this)),
+                    targets : perform.getTargets($(this)),
+                    befores : perform.getBefores($(this)),
+                    afters : perform.getAfters($(this))
+                };
                 perform.collection.push(model);
             });
             perform.binder();
@@ -50,17 +52,26 @@ $(function () {
             for (var i = 0; i < perform.collection.length; i++) {
                 perform.current = perform.collection[i];
                 for (var q = 0; q < perform.current.events.length; q++) {
-                    perform.bind(perform.current, q);
+                    if(perform.current.types[q] === "local") {
+                        perform.bindLocal(perform.current, q, i);
+                    } 
+                    if(perform.current.types[q] === "remote") {
+                        perform.bindRemote(perform.current, q, i);
+                    }
                 }
             }
         },
-        bind: function (item, q) {
-
-            $(item.object).off(item.events[q]).on(item.events[q], function () {
+        bindLocal: function (item, q, i) {
+            item.object.on(item.events[q], { model: item, q: q }, function (event) {
+                event.data.model.actions[event.data.q].call(this);
+            });
+        },
+        bindRemote: function (item, q) {
+            $(item.object).on(item.events[q], { model: item, q: q }, function (event) {
                 var stuff = $.ajax({
-                    url: item.actions[q],
-                    type: item.methods[q],
-                    data: $(item.formids[q]).serializeArray()
+                    url: event.data.model.actions[q],
+                    type: event.data.model.methods[q],
+                    data: $(event.data.model.formids[q]).serializeArray()
                 });
                 $(item.targets[q]).html(stuff);
             });
@@ -69,8 +80,8 @@ $(function () {
         reset: function () {
             perform.collection = [];
         },
-        getForms: function (form) {
-            return form.attr('data-perform-forms').split(',');
+        getForms: function (submit) {
+            return submit.attr('data-perform-forms').split(',');
         },
         getEvents: function (submit) {
             return submit.attr('data-perform-events').split(',');

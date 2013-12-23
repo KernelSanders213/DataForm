@@ -3,16 +3,19 @@
 	<head>
 		<script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="DataForm.js"></script>
+		<script type="text/javascript" charset="utf-8" src="local.js"></script>
 	</head>
 	<body>
 		<form id="test-form" data-perform-form="test-form">
-			<input type="text" name="username" placeholder="Username">
-			<input type="password" name="password" placeholder="Password">
-			<input type="submit" value="Login to site A" data-perform-actions="http://a.site.com" data-perform-methods="get" data-perform-types="ajax" data-perform-targets="#test-target">
-			<input type="submit" value="Login to site B" data-perform-action="http://b.site.com" data-perform-method="post" data-perform-type="normal">
+			<input type="text" name="value1" placeholder="Value 1"><br>
+			<input type="text" name="value2" placeholder="Value 2"><br>
+			<input type="text" name="value3" placeholder="Value 3"><br>
+			<input type="text" name="value4" placeholder="Value 4"><br>
 		</form>
+		<button type="button" data-perform-events="click" data-perform-forms="#test-form" data-perform-actions="local.process" data-perform-types="local" data-perform-targets="#test-target" data-perform-methods="none">Process Form Locally</button><br>
+		<button type="button" data-perform-events="click" data-perform-forms="#test-form" data-perform-actions="http://a.site.com" data-perform-methods="get" data-perform-types="remote" data-perform-targets="#test-target">Process Form Remotely</button>
 		<div id="test-target">
-			
+			Please press button to process the form.
 		</div>
 	</body>
 </html>
