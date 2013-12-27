@@ -63,7 +63,7 @@ $(function () {
         },
         bindLocal: function (item, q, i) {
             item.object.on(item.events[q], { model: item, q: q }, function (event) {
-                event.data.model.actions[event.data.q].call(this);
+                eval(event.data.model.actions[event.data.q]).call(this);
             });
         },
         bindRemote: function (item, q) {

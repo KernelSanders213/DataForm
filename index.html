@@ -12,10 +12,13 @@
 			<input type="text" name="value3" placeholder="Value 3"><br>
 			<input type="text" name="value4" placeholder="Value 4"><br>
 		</form>
-		<button type="button" data-perform-events="click" data-perform-forms="#test-form" data-perform-actions="local.process" data-perform-types="local" data-perform-targets="#test-target" data-perform-methods="none">Process Form Locally</button><br>
+		<button type="button" data-perform-events="click,click" data-perform-forms="#test-form,#test-form" data-perform-actions="local.process,local.second" data-perform-types="local,local" data-perform-targets="#test-target#test-target2" data-perform-methods="none,none">Process Form Locally</button><br>
 		<button type="button" data-perform-events="click" data-perform-forms="#test-form" data-perform-actions="http://a.site.com" data-perform-methods="get" data-perform-types="remote" data-perform-targets="#test-target">Process Form Remotely</button>
 		<div id="test-target">
 			Please press button to process the form.
+		</div>
+		<div id="test-target2">
+
 		</div>
 	</body>
 </html>
