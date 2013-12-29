@@ -1,43 +1,95 @@
-DataForm
+PerForm
 ========
 
-jQuery submitting of a form through just data attributes
+jQuery submitting of a form, to any number of locations, remote and local, from any html element, any event, even from outside of the form.
 
-Update v 0.3
+Current Version 0.4 Beta
 ========
-Finish the model for storing data. Now as the capability for on click submit and on change submit. Also allows for post and get methods. The reason that all of the attributes contain a "s" is because they allow for a comma, separted array to be passed. This allows for one html item to submit to multiple places.<br>
+####Changes from 0.3:
+Added functionality to submit the form locally, as in passing the values of the form to a JavaScript function. Library is now fully functional except for the before and after method calls, which should be completed soon in a small update. The structure of the library has changed drastically, and many of the attributes have been completely repurposed. Please seen the new instructions below.
 
-New attributes and renamed:
----------------------------
-<br>
-<strong>New:</strong><br>
-*events - defines whether it is triggered onclick ("click") or onchange("change")<br>
-*methods - defines whether it is a "get" or "post" method.<br>
-<br>
-<strong>Renamed:</strong><br>
-*types - this is the type of the data attribute form, "ajax" or "form"<br>
-*befores - functions that run before a submit<br>
-*afters - functions that run after a submit<br>
-*actions - location to post the data<br>
-*forms- the Form's or Forms' name<br>
-*targets - the target to update<br>
+### What do I need?
 
-Things to do:
--------------
-<br>
-*Run before and after methods<br>
-*Error handling
+The entire library is included in the perform.js file. Simply include the file in your `<head>`. jQuery is required! Tested with jQuery 1.8 and 1.10.1
 
-jsFiddle Here: http://jsfiddle.net/jpking5191/e3Z5K/5/
+### How to use
 
+Mark each form that you would like to submit using the library with the following data-attribute:
+```
+data-perform-form="<form name>"
+```
 
-Update v 0.2
-========
-It is now completely dynamic. This introduces the new namespace perForm. Also finish encapsulating running a function before and after a submit.<br>
-New attributes and renamed:<br>
-*type - this is the type of the data attribute form, "AjaxUpdate" or "Form"<br>
-*bFunction - functions that run before a submit<br>
-*aFunction - functions that run after a submit<br>
-*location - location to post the data<br>
-*form - the Form's name<br>
-*target - the target to update<br>
+Use the following data-attrubutes on the items that you would like to submit forms with like a button, a dropdown list, a picture, or any other html element.
+
+```
+data-perform-events="<event1>[,<event2>, etc...]"
+```
+The jQuery events to bind the form submission to. This can be any event: click, hover, blur, change, or even custom events.
+
+```
+data-perform-actions="<action1>[,<action2>, etc...]"
+```
+The destination URLs or local JavaScript methods to submit the form values to.
+
+```
+data-perform-methods="<method1>[,<method2>, etc...]"
+```
+get, set, or local
+
+```
+data-perform-targets="<target1>[,<target2>, etc...]"
+```
+jQuery selector of targets to update with the return of remote submissions
+
+```
+data-perform-befores="<function1>[,<function2>, etc...]"
+```
+Names of JavaScript functions, these will be called before the form is submitted. *Currently under development*
+
+```
+data-perform-afters="<function1>[,<function2>, etc...]"
+```
+Names of JavaScript functions, these will be called after the form is submitted. *Currently under development*
+
+###Why is everything plural?
+
+The library is made to be flexible, any number of forms can be submitted to any number or locations, on any number of events. The library assumes that ALL of the attributes will be present for each combination, and that they will ALL be in the same order. So the first form listed will be submitted on the first event listed to the first action listed, using the first method, and will update the first target. *(Local submissions do not update targets, but a value is required to keep everything in line.)*
+
+###Example
+
+```
+<button type="button" 
+    data-perform-formids="form1,form2" 
+    data-perform-events="click,click" 
+    data-perform-actions="http://example.com,example.process" 
+    data-perform-methods="get,local"
+    data-perform-targets="#update-div,none">Click Me</button>
+```
+When this button is clicked perform will submit `form1` to `http://example.com` via `get` and will replace the contents of `#update-div` with the returned data.
+
+At the same time perform will submit the values of `form2` to the JavaScript method `example.process()` and will pass the values in as the first argument *(see below)* and also sets the context of `this` to the element that triggered the event. The target is set to `none` which effectively could be any value, as it is ignored, but still required as a placeholder. Imagine if these two combinations were reversed in order, then if the local combination did not have a placeholder, the remote combination would not have a target to update...
+
+###Local
+
+Consider the following form
+```
+<form data-perform-form="form2">
+    <input type="text" name="name">
+    <input type="number" name="age">
+    <input type="tel" name="phone">
+</form>
+```
+Now lets assume that this is submitted to the local method `example.process` from the above example. The values of the form are passed as an argument to the method.
+```
+var example = {
+    process: function (request) {
+        request.name //Contains the value of the textbox
+        request.age  //Contains the value of the number box
+        request.phone//Contains the value of the tel box
+        this         //The <button> element
+    }
+};
+```
+
+###Issues or problems?
+Please create a github issue on this repository, we'll be more than happy to help!!

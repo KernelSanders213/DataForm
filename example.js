@@ -1,8 +1,8 @@
 var local = {
 	process: function (request) {
-		alert("Called");
+		alert(request.value1);
 	},
 	second: function (request) {
-		alert(request);
+		alert(request.value2);
 	}
 }

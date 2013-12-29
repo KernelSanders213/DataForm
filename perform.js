@@ -23,7 +23,6 @@ $(function () {
             events: [],
             actions: [],
             methods: [],
-            types: [],
             targets: [],
             befores: [],
             afters: []
@@ -39,7 +38,6 @@ $(function () {
                     events : perform.getEvents($(this)),
                     actions : perform.getActions($(this)),
                     methods : perform.getMethods($(this)),
-                    types : perform.getTypes($(this)),
                     targets : perform.getTargets($(this)),
                     befores : perform.getBefores($(this)),
                     afters : perform.getAfters($(this))
@@ -52,10 +50,9 @@ $(function () {
             for (var i = 0; i < perform.collection.length; i++) {
                 perform.current = perform.collection[i];
                 for (var q = 0; q < perform.current.events.length; q++) {
-                    if(perform.current.types[q] === "local") {
+                    if(perform.current.methods[q] === "local") {
                         perform.bindLocal(perform.current, q, i);
-                    } 
-                    if(perform.current.types[q] === "remote") {
+                    } else {
                         perform.bindRemote(perform.current, q, i);
                     }
                 }
@@ -63,7 +60,11 @@ $(function () {
         },
         bindLocal: function (item, q, i) {
             item.object.on(item.events[q], { model: item, q: q }, function (event) {
-                eval(event.data.model.actions[event.data.q]).call(this);
+                var array = $(event.data.model.formids[q]).serializeArray(), result = {}, i = 0;
+                for(i = 0; i < array.length; i++) {
+                    eval('result.' + array[i].name + ' = array[' + i + '].value;');
+                }
+                eval(event.data.model.actions[event.data.q]).call(this, result);
             });
         },
         bindRemote: function (item, q) {
@@ -91,9 +92,6 @@ $(function () {
         },
         getMethods: function (submit) {
             return submit.attr('data-perform-methods').split(',');
-        },
-        getTypes: function (submit) {
-            return submit.attr('data-perform-types').split(',');
         },
         getTargets: function (submit) {
             return submit.attr('data-perform-targets').split(',');

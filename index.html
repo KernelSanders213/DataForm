@@ -2,8 +2,8 @@
 <html>
 	<head>
 		<script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-		<script type="text/javascript" charset="utf-8" src="DataForm.js"></script>
-		<script type="text/javascript" charset="utf-8" src="local.js"></script>
+		<script type="text/javascript" charset="utf-8" src="perform.js"></script>
+		<script type="text/javascript" charset="utf-8" src="example.js"></script>
 	</head>
 	<body>
 		<form id="test-form" data-perform-form="test-form">
@@ -12,8 +12,8 @@
 			<input type="text" name="value3" placeholder="Value 3"><br>
 			<input type="text" name="value4" placeholder="Value 4"><br>
 		</form>
-		<button type="button" data-perform-events="click,click" data-perform-forms="#test-form,#test-form" data-perform-actions="local.process,local.second" data-perform-types="local,local" data-perform-targets="#test-target#test-target2" data-perform-methods="none,none">Process Form Locally</button><br>
-		<button type="button" data-perform-events="click" data-perform-forms="#test-form" data-perform-actions="http://a.site.com" data-perform-methods="get" data-perform-types="remote" data-perform-targets="#test-target">Process Form Remotely</button>
+		<button type="button" data-perform-events="click,click" data-perform-forms="#test-form,#test-form" data-perform-actions="local.process,local.second" data-perform-targets="#test-target,#test-target2" data-perform-methods="local,local">Process Form Locally</button><br>
+		<button type="button" data-perform-events="click" data-perform-forms="#test-form" data-perform-actions="http://a.site.com" data-perform-methods="get" data-perform-targets="#test-target">Process Form Remotely</button>
 		<div id="test-target">
 			Please press button to process the form.
 		</div>
