@@ -8,7 +8,7 @@
  *           submit to based which submit
  *           button was pressed
  *
- * Version:  0.2
+ * Version:  0.4
  * By: Justin King and Scott Robinson
  *****************************************/
 var perform = perform || {};
@@ -59,22 +59,26 @@ $(function () {
             }
         },
         bindLocal: function (item, q, i) {
-            item.object.on(item.events[q], { model: item, q: q }, function (event) {
+            //console.log("Binding " + item.formids[q] + " submission using " + item.object + " to " + item.actions[q] + " on " + item.events[q] + " via " + item.methods[q] + " using local binding."); 
+            item.object.on(item.events[q], { model: item, q: q }, function (event) {  
                 var array = $(event.data.model.formids[q]).serializeArray(), result = {}, i = 0;
                 for(i = 0; i < array.length; i++) {
                     eval('result.' + array[i].name + ' = array[' + i + '].value;');
                 }
-                eval(event.data.model.actions[event.data.q]).call(this, result);
+                eval(event.data.model.actions[event.data.q]).call(this, result, event.data.model.targets[q]);
             });
         },
         bindRemote: function (item, q) {
+            //console.log("Binding " + item.formids[q] + " submission " + item.object + " to " + item.actions[q] + " on " + item.events[q] + " via " + item.methods[q] + " using remote binding.");
             $(item.object).on(item.events[q], { model: item, q: q }, function (event) {
-                var stuff = $.ajax({
+                $.ajax({
                     url: event.data.model.actions[q],
                     type: event.data.model.methods[q],
-                    data: $(event.data.model.formids[q]).serializeArray()
+                    data: $(event.data.model.formids[q]).serializeArray(),
+                    success: function (data, textStatus, jqXHR) {
+                        $(item.targets[q]).html(data);
+                    }
                 });
-                $(item.targets[q]).html(stuff);
             });
 
         },

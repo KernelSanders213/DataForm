@@ -7,18 +7,21 @@
 	</head>
 	<body>
 		<form id="test-form" data-perform-form="test-form">
-			<input type="text" name="value1" placeholder="Value 1"><br>
-			<input type="text" name="value2" placeholder="Value 2"><br>
-			<input type="text" name="value3" placeholder="Value 3"><br>
-			<input type="text" name="value4" placeholder="Value 4"><br>
+			<input type="text" name="bgcolor" placeholder="Header Background Color"><br>
+			<input type="text" name="color" placeholder="Header Text Color"><br>
+			<input type="text" name="head" placeholder="Header Text"><br>
+			<textarea name="text" placeholder="Body Text"></textarea><br>
 		</form>
-		<button type="button" data-perform-events="click,click" data-perform-forms="#test-form,#test-form" data-perform-actions="local.process,local.second" data-perform-targets="#test-target,#test-target2" data-perform-methods="local,local">Process Form Locally</button><br>
-		<button type="button" data-perform-events="click" data-perform-forms="#test-form" data-perform-actions="http://a.site.com" data-perform-methods="get" data-perform-targets="#test-target">Process Form Remotely</button>
+		<button type="button" data-perform-events="click,click" data-perform-forms="#test-form,#test-form" data-perform-actions="local.process,local.second" data-perform-targets="#test-target3,#test-target3" data-perform-methods="local,local">Process Form Locally</button><br>
+		<button type="button" data-perform-events="mouseenter,click,mouseleave" data-perform-forms="#test-form,#test-form,#test-form" data-perform-actions="http://bluelineapps.net/php/performtest1.php,http://bluelineapps.net/php/performtest2.php,local.blur" data-perform-methods="get,post,local" data-perform-targets="#test-target,#test-target2,#test-target">Process Form Remotely</button>
 		<div id="test-target">
-			Please press button to process the form.
+			Hover over the "Process Form Remotely" button to submit the form and change this area.
 		</div>
 		<div id="test-target2">
-
+            Click on the "Process Form Remotely" button to submit the form to another method and change this area.
 		</div>
+        <div id="test-target3">
+            Click on the "Process Form Locally" button to submit the form to a local JavaScript method and update this area.
+        </div>
 	</body>
 </html>

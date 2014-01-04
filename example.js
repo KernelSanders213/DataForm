@@ -1,8 +1,16 @@
 var local = {
-	process: function (request) {
-		alert(request.value1);
+	process: function (request, target) {
+        $(target).html(
+            $('<p/>').append(
+                $('<b/>').html(request.head + ": "),
+                $('<em/>').html(request.text)
+            )
+        );
+    },
+	second: function (request, target) {
+		alert(request.head + ": " + request.text);
 	},
-	second: function (request) {
-		alert(request.value2);
-	}
+    blur: function (request) {
+        $('#test-target').empty();   
+    }
 }
