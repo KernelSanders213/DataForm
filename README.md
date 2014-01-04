@@ -82,10 +82,11 @@ Consider the following form
 Now lets assume that this is submitted to the local method `example.process` from the above example. The values of the form are passed as an argument to the method.
 ```
 var example = {
-    process: function (request) {
+    process: function (request, target) {
         request.name //Contains the value of the textbox
         request.age  //Contains the value of the number box
         request.phone//Contains the value of the tel box
+        target       //Contains the value that was entered into data-perform-targets for this combination
         this         //The <button> element
     }
 };
