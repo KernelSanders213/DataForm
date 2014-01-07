@@ -37,8 +37,7 @@ $(function () {
             main: '|',
             secondary: ';',
             tertiary: ',',
-        },
-        
+        },        
         parse: function () {
             $('[data-perform-events]').each(function () {             
                 var model = {
@@ -83,26 +82,40 @@ $(function () {
         bindRemote: function (item, q) {
             //console.log("Binding " + item.formids[q] + " submission " + item.object + " to " + item.actions[q] + " on " + item.events[q] + " via " + item.methods[q] + " using remote binding.");
             $(item.object).on(item.events[q], { model: item, q: q }, function (event) {
+                //Run the before ajax call
+                if (item.befores !== undefined) {
+                    var bFunctions = item.befores[q].split(perform.split.secondary);
+                    var bParams = item.beforeparams[q].split(perform.split.secondary);
+                    for(var i in bFunctions){
+                        var fn = bFunctions[i];
+                        if (fn !== ''){
+                            var params = bParams[i].split(perform.split.tertiary);
+                            if (params === undefined || params == '') window[fn]();
+                            else window[fn].apply(this, params);
+                        }
+                    }
+                }
                 $.ajax({
                     url: event.data.model.actions[q],
                     type: event.data.model.methods[q],
                     data: $(event.data.model.formids[q]).serializeArray(),
-                    beforeSend: function (){ 
-                        if (item.befores !== undefined) {
-                            var bFunctions = item.befores[q].split(perform.split.secondary);
-                            var bParams = item.beforeparams[q].split(perform.split.secondary);
-                            for(var i in bFunctions){
-                                var fn = bFunctions[i];
+                    success: function (data, textStatus, jqXHR) {
+                        $(item.targets[q]).html(data);
+                    },
+                    complete: function(){
+                        //Run the after ajax call
+                        if (item.afters !== undefined) {
+                            var aFunctions = item.afters[q].split(perform.split.secondary);
+                            var aParams = item.afterparams[q].split(perform.split.secondary);
+                            for(var i in aFunctions){
+                                var fn = aFunctions[i];
                                 if (fn !== ''){
-                                    var params = bParams[i].split(perform.split.tertiary);
+                                    var params = aParams[i].split(perform.split.tertiary);
                                     if (params === undefined || params == '') window[fn]();
                                     else window[fn].apply(this, params);
                                 }
                             }
                         }
-                    },
-                    success: function (data, textStatus, jqXHR) {
-                        $(item.targets[q]).html(data);
                     }
                 });
             });
@@ -150,7 +163,6 @@ $(function () {
         },
         errorCheck: function(model) {
             var maxCount = 0;
-            
             //Get the max amount of an array
             model.formids.length >= maxCount ? maxCount = model.formids.length: false;
             model.events.length >= maxCount ? maxCount = model.events.length: false;
@@ -161,28 +173,26 @@ $(function () {
             if(model.beforeparams !== undefined) model.beforeparams.length >= maxCount ? maxCount = model.beforeparams.length: false;
             if(model.afters !== undefined) model.afters.length >= maxCount ? maxCount = model.afters.length: false;
             if(model.afterparams !== undefined) model.afterparams.length >= maxCount ? maxCount = model.afterparams.length: false;
-            
             //Log the errors of the improper index count
             if (model.formids.length < maxCount) console.log("Invalid data-perform-forms index count: " + model.formids.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.events.length < maxCount) console.log("Invalid data-perform-events index count: " + model.events.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.actions.length < maxCount) console.log("Invalid data-perform-actions index count: " + model.actions.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.methods.length < maxCount) console.log("Invalid data-perform-methods index count: " + model.methods.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.targets.length < maxCount) console.log("Invalid data-perform-targets index count: " + model.targets.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.befores !== undefined && model.befores.length < maxCount) console.log("Invalid data-perform-befores index count: " + model.befores.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.beforeparams !== undefined && model.beforeparams.length < maxCount) console.log("Invalid data-perform-bparams index count: " + model.beforeparams.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character ';'.");
             if (model.afters !== undefined && model.afters.length < maxCount) console.log("Invalid data-perform-afters index count: " + model.afters.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.afterparams !== undefined && model.afterparams.length < maxCount) console.log("Invalid data-perform-aparams index count: " + model.afterparams.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character ';'.");
         }
     };
-
     perform.parse();
 });
