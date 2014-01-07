@@ -8,7 +8,7 @@
  *           submit to based which submit
  *           button was pressed
  *
- * Version:  0.4
+ * Version:  0.5
  * By: Justin King and Scott Robinson
  *****************************************/
 var perform = perform || {};
