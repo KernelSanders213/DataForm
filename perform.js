@@ -30,6 +30,7 @@ $(function () {
         //The perform collection to hold all of the models for the current page
         collection: [],
         current: {},
+        verbose: false,
         parse: function () {
             $('[data-perform-events]').each(function () {             
                 var model = {
