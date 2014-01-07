@@ -25,7 +25,9 @@ $(function () {
             methods: [],
             targets: [],
             befores: [],
-            afters: []
+            beforeparams: [],
+            afters: [],
+            afterparams: [],
         },
         //The perform collection to hold all of the models for the current page
         collection: [],
@@ -43,7 +45,9 @@ $(function () {
                     methods : perform.getMethods($(this)),
                     targets : perform.getTargets($(this)),
                     befores : perform.getBefores($(this)),
-                    afters : perform.getAfters($(this))
+                    beforeparams : perform.getBeforeParams($(this)),
+                    afters : perform.getAfters($(this)),
+                    afterparams : perform.getAfterParams($(this)),
                 };
                 if(perform.verbose) perform.errorCheck(model);
                 perform.collection.push(model);
@@ -79,6 +83,14 @@ $(function () {
                     url: event.data.model.actions[q],
                     type: event.data.model.methods[q],
                     data: $(event.data.model.formids[q]).serializeArray(),
+                    beforeSend: function (){ 
+                        if (item.befores !== undefined) {
+                            var before = items.befores[q];
+                            var params = items.beforeparams[q];
+                            if (params === undefined) window[before]();
+                            else window[before](params);
+                        }
+                    },
                     success: function (data, textStatus, jqXHR) {
                         $(item.targets[q]).html(data);
                     }
@@ -106,7 +118,7 @@ $(function () {
         },
         getMethods: function (submit) {
             var attr = submit.attr('data-perform-methods');
-           if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-methods attribute is present.");
+            if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-methods attribute is present.");
             return attr ? attr.split(perform.splitchar) : [];
         },
         getTargets: function (submit) {
@@ -117,8 +129,14 @@ $(function () {
         getBefores: function (submit) {
             return submit.attr('data-perform-befores') ? submit.attr('data-perform-befores').split(perform.splitchar) : undefined;
         },
+        getBeforeParams: function (submit) {
+            return submit.attr('data-perform-bparams') ? submit.attr('data-perform-bparams').split(';') : undefined;
+        },
         getAfters: function (submit) {
             return submit.attr('data-perform-afters') ? submit.attr('data-perform-afters').split(perform.splitchar) : undefined;
+        },
+        getAfterParams: function (submit) {
+            return submit.attr('data-perform-aparams') ? submit.attr('data-perform-aparams').split(';') : undefined;
         },
         errorCheck: function(model) {
             var maxCount = 0;
@@ -130,7 +148,9 @@ $(function () {
             model.methods.length >= maxCount ? maxCount = model.methods.length: false;
             model.targets.length >= maxCount ? maxCount = model.targets.length: false;
             if(model.befores !== undefined) model.befores.length >= maxCount ? maxCount = model.befores.length: false;
+            if(model.beforeparams !== undefined) model.beforeparams.length >= maxCount ? maxCount = model.beforeparams.length: false;
             if(model.afters !== undefined) model.afters.length >= maxCount ? maxCount = model.afters.length: false;
+            if(model.afterparams !== undefined) model.afterparams.length >= maxCount ? maxCount = model.afterparams.length: false;
             
             //Log the errors of the improper index count
             if (model.formids.length < maxCount) console.log("Invalid data-perform-forms index count: " + model.formids.length + " of total: " + maxCount
@@ -145,8 +165,12 @@ $(function () {
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.befores !== undefined && model.befores.length < maxCount) console.log("Invalid data-perform-befores index count: " + model.befores.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            if (model.beforeparams !== undefined && model.beforeparams.length < maxCount) console.log("Invalid data-perform-bparams index count: " + model.beforeparams.length + " of total: " + maxCount
+            + ". Please  make sure it is split properly with the character ';'.");
             if (model.afters !== undefined && model.afters.length < maxCount) console.log("Invalid data-perform-afters index count: " + model.afters.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            if (model.afterparams !== undefined && model.afterparams.length < maxCount) console.log("Invalid data-perform-aparams index count: " + model.afterparams.length + " of total: " + maxCount
+            + ". Please  make sure it is split properly with the character ';'.");
         }
     };
 
