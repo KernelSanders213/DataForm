@@ -33,7 +33,11 @@ $(function () {
         collection: [],
         current: {},
         verbose: true,
-        splitchar: ',',
+        split: {
+            main: '|',
+            secondary: ';',
+            tertiary: ',',
+        },
         
         parse: function () {
             $('[data-perform-events]').each(function () {             
@@ -85,10 +89,16 @@ $(function () {
                     data: $(event.data.model.formids[q]).serializeArray(),
                     beforeSend: function (){ 
                         if (item.befores !== undefined) {
-                            var before = items.befores[q];
-                            var params = items.beforeparams[q];
-                            if (params === undefined) window[before]();
-                            else window[before](params);
+                            var bFunctions = item.befores[q].split(perform.split.secondary);
+                            var bParams = item.beforeparams[q].split(perform.split.secondary);
+                            for(var i in bFunctions){
+                                var fn = bFunctions[i];
+                                if (fn !== ''){
+                                    var params = bParams[i].split(perform.split.tertiary);
+                                    if (params === undefined || params == '') window[fn]();
+                                    else window[fn].apply(this, params);
+                                }
+                            }
                         }
                     },
                     success: function (data, textStatus, jqXHR) {
@@ -104,39 +114,39 @@ $(function () {
         getForms: function (submit) {
             var attr = submit.attr('data-perform-forms');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-forms attribute is present.");
-            return attr ? attr.split(perform.splitchar) : [];
+            return attr ? attr.split(perform.split.tertiary) : [];
         },
         getEvents: function (submit) {
             var attr = submit.attr('data-perform-events');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-events attribute is present.");
-            return attr ? attr.split(perform.splitchar) : [];
+            return attr ? attr.split(perform.split.tertiary) : [];
         },
         getActions: function (submit) {
             var attr = submit.attr('data-perform-actions');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-actions attribute is present.");
-            return attr ? attr.split(perform.splitchar) : [];
+            return attr ? attr.split(perform.split.tertiary) : [];
         },
         getMethods: function (submit) {
             var attr = submit.attr('data-perform-methods');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-methods attribute is present.");
-            return attr ? attr.split(perform.splitchar) : [];
+            return attr ? attr.split(perform.split.tertiary) : [];
         },
         getTargets: function (submit) {
             var attr = submit.attr('data-perform-targets');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-targets attribute is present.");
-            return attr ? attr.split(perform.splitchar) : [];
+            return attr ? attr.split(perform.split.tertiary) : [];
         },
         getBefores: function (submit) {
-            return submit.attr('data-perform-befores') ? submit.attr('data-perform-befores').split(perform.splitchar) : undefined;
+            return submit.attr('data-perform-befores') ? submit.attr('data-perform-befores').split(perform.split.main) : undefined;
         },
         getBeforeParams: function (submit) {
-            return submit.attr('data-perform-bparams') ? submit.attr('data-perform-bparams').split(';') : undefined;
+            return submit.attr('data-perform-bparams') ? submit.attr('data-perform-bparams').split(perform.split.main) : undefined;
         },
         getAfters: function (submit) {
-            return submit.attr('data-perform-afters') ? submit.attr('data-perform-afters').split(perform.splitchar) : undefined;
+            return submit.attr('data-perform-afters') ? submit.attr('data-perform-afters').split(perform.split.main) : undefined;
         },
         getAfterParams: function (submit) {
-            return submit.attr('data-perform-aparams') ? submit.attr('data-perform-aparams').split(';') : undefined;
+            return submit.attr('data-perform-aparams') ? submit.attr('data-perform-aparams').split(perform.split.main) : undefined;
         },
         errorCheck: function(model) {
             var maxCount = 0;
@@ -154,21 +164,21 @@ $(function () {
             
             //Log the errors of the improper index count
             if (model.formids.length < maxCount) console.log("Invalid data-perform-forms index count: " + model.formids.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
             if (model.events.length < maxCount) console.log("Invalid data-perform-events index count: " + model.events.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
             if (model.actions.length < maxCount) console.log("Invalid data-perform-actions index count: " + model.actions.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
             if (model.methods.length < maxCount) console.log("Invalid data-perform-methods index count: " + model.methods.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
             if (model.targets.length < maxCount) console.log("Invalid data-perform-targets index count: " + model.targets.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
             if (model.befores !== undefined && model.befores.length < maxCount) console.log("Invalid data-perform-befores index count: " + model.befores.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
             if (model.beforeparams !== undefined && model.beforeparams.length < maxCount) console.log("Invalid data-perform-bparams index count: " + model.beforeparams.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character ';'.");
             if (model.afters !== undefined && model.afters.length < maxCount) console.log("Invalid data-perform-afters index count: " + model.afters.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split.main + "'.");
             if (model.afterparams !== undefined && model.afterparams.length < maxCount) console.log("Invalid data-perform-aparams index count: " + model.afterparams.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character ';'.");
         }
