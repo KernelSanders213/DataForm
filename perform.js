@@ -90,30 +90,35 @@ $(function () {
             perform.collection = [];
         },
         getForms: function (submit) {
-            if (perform.verbose) submit.attr('data-perform-forms') ? continue: console.log("No data-perform-forms attribute is present.");
-            return submit.attr('data-perform-forms') ? submit.attr('data-perform-forms').split(perform.splitchar) : [];
+            var attr = submit.attr('data-perform-forms');
+            if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-forms attribute is present.");
+            return attr ? attr.split(perform.splitchar) : [];
         },
         getEvents: function (submit) {
-            if (perform.verbose) submit.attr('data-perform-events') ? continue: console.log("No data-perform-events attribute is present.");
-            return submit.attr('data-perform-events') ? submit.attr('data-perform-events').split(perform.splitchar) : [];
+            var attr = submit.attr('data-perform-events');
+            if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-events attribute is present.");
+            return attr ? attr.split(perform.splitchar) : [];
         },
         getActions: function (submit) {
-            if (perform.verbose) submit.attr('data-perform-actions') ? continue: console.log("No data-perform-actions attribute is present.");
-            return submit.attr('data-perform-actions') ? submit.attr('data-perform-actions').split(perform.splitchar) : [];
+            var attr = submit.attr('data-perform-actions');
+            if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-actions attribute is present.");
+            return attr ? attr.split(perform.splitchar) : [];
         },
         getMethods: function (submit) {
-            if (perform.verbose) submit.attr('data-perform-methods') ? continue: console.log("No data-perform-methods attribute is present.");
-            return submit.attr('data-perform-methods') ? submit.attr('data-perform-methods').split(perform.splitchar) : [];
+            var attr = submit.attr('data-perform-methods');
+           if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-methods attribute is present.");
+            return attr ? attr.split(perform.splitchar) : [];
         },
         getTargets: function (submit) {
-            if (perform.verbose) submit.attr('data-perform-targets') ? continue: console.log("No data-perform-targets attribute is present.");
-            return submit.attr('data-perform-targets') ? submit.attr('data-perform-targets').split(perform.splitchar) : [];
+            var attr = submit.attr('data-perform-targets');
+            if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-targets attribute is present.");
+            return attr ? attr.split(perform.splitchar) : [];
         },
         getBefores: function (submit) {
-            return submit.attr('data-perform-befores') ? submit.attr('data-perform-befores').split(perform.splitchar) : [];
+            return submit.attr('data-perform-befores') ? submit.attr('data-perform-befores').split(perform.splitchar) : undefined;
         },
         getAfters: function (submit) {
-            return submit.attr('data-perform-afters') ? submit.attr('data-perform-afters').split(perform.splitchar) : [];
+            return submit.attr('data-perform-afters') ? submit.attr('data-perform-afters').split(perform.splitchar) : undefined;
         },
         errorCheck: function(model) {
             var maxCount = 0;
@@ -124,8 +129,8 @@ $(function () {
             model.actions.length >= maxCount ? maxCount = model.actions.length: false;
             model.methods.length >= maxCount ? maxCount = model.methods.length: false;
             model.targets.length >= maxCount ? maxCount = model.targets.length: false;
-            model.befores.length >= maxCount ? maxCount = model.befores.length: false;
-            model.afters.length >= maxCount ? maxCount = model.afters.length: false;
+            if(model.befores !== undefined) model.befores.length >= maxCount ? maxCount = model.befores.length: false;
+            if(model.afters !== undefined) model.afters.length >= maxCount ? maxCount = model.afters.length: false;
             
             //Log the errors of the improper index count
             if (model.formids.length < maxCount) console.log("Invalid data-perform-forms index count: " + model.formids.length + " of total: " + maxCount
@@ -138,9 +143,9 @@ $(function () {
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.targets.length < maxCount) console.log("Invalid data-perform-targets index count: " + model.targets.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
-            if (model.befores.length < maxCount) console.log("Invalid data-perform-befores index count: " + model.befores.length + " of total: " + maxCount
+            if (model.befores !== undefined && model.befores.length < maxCount) console.log("Invalid data-perform-befores index count: " + model.befores.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
-            if (model.afters.length < maxCount) console.log("Invalid data-perform-afters index count: " + model.afters.length + " of total: " + maxCount
+            if (model.afters !== undefined && model.afters.length < maxCount) console.log("Invalid data-perform-afters index count: " + model.afters.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
         }
     };
