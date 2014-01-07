@@ -3,8 +3,11 @@ PerForm
 
 jQuery submitting of a form, to any number of locations, remote and local, from any html element, any event, even from outside of the form.
 
-Current Version 0.4 Beta
+Current Version 0.5 Beta
 ========
+####Changes from 0.4:
+Added the error logging. This provides more help when setting up the perform. Before and after functions are now working. There can be multiple functions for before and after each form submit, and each function can have multiple parameters.
+
 ####Changes from 0.3:
 Added functionality to submit the form locally, as in passing the values of the form to a JavaScript function. Library is now fully functional except for the before and after method calls, which should be completed soon in a small update. The structure of the library has changed drastically, and many of the attributes have been completely repurposed. Please seen the new instructions below.
 
