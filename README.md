@@ -3,8 +3,11 @@ PerForm
 
 jQuery submitting of a form, to any number of locations, remote and local, from any html element, any event, even from outside of the form.
 
-Current Version 0.5 Beta
+Current Version 0.6 Beta
 ========
+####Changes from 0.5:
+Added ability to have on success functions and on error functions. Added ability to bypass form submit. If any before function returns false then it will not submit the form. Change the data attribute names of before and after functions to bfns and afns.
+
 ####Changes from 0.4:
 Added the error logging. This provides more help when setting up the perform. Before and after functions are now working. There can be multiple functions for before and after each form submit, and each function can have multiple parameters.
 
@@ -45,14 +48,44 @@ data-perform-targets="<target1>[,<target2>, etc...]"
 jQuery selector of targets to update with the return of remote submissions
 
 ```
-data-perform-befores="<function1>[,<function2>, etc...]"
+data-perform-bfns="<function1>[;<function 2>; etc...](|<function1>[;<function 2>; etc...]| ect...)"
 ```
-Names of JavaScript functions, these will be called before the form is submitted. *Currently under development*
+Names of JavaScript functions, these will be called before the form is submitted. Before functions also have the ability to stop a form from submitting if they return false.
 
 ```
-data-perform-afters="<function1>[,<function2>, etc...]"
+data-perform-bparams="<param1(,param2, ect...)>[<param1(,param2, ect...)>](| ect...)"
 ```
-Names of JavaScript functions, these will be called after the form is submitted. *Currently under development*
+Parameters for the functions that run before a submit.
+
+```
+data-perform-afns="<function1>[;<function 2>; etc...](|<function1>[;<function 2>; etc...]| ect...)"
+```
+Names of JavaScript functions, these will be called after the form is submitted.
+
+```
+data-perform-aparams="<param1(,param2, ect...)>[<param1(,param2, ect...)>](| ect...)"
+```
+Parameters for the functions that run after submit.
+
+```
+data-perform-sfns="<function1>[;<function 2>; etc...](|<function1>[;<function 2>; etc...]| ect...)"
+```
+Names of JavaScript functions, these will be called if the form submits successfully.
+
+```
+data-perform-sparams="<param1(,param2, ect...)>[<param1(,param2, ect...)>](| ect...)"
+```
+Parameters for the on successful submit functions.
+
+```
+data-perform-efns="<function1>[;<function 2>; etc...](|<function1>[;<function 2>; etc...]| ect...)"
+```
+Names of JavaScript functions, these will be called if there is an error when submitting the form.
+
+```
+data-perform-eparams="<param1(,param2, ect...)>[<param1(,param2, ect...)>](| ect...)"
+```
+Parameters for the functions that run when there is an error when submitting the form.
 
 ###Why is everything plural?
 
