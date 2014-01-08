@@ -84,28 +84,15 @@ $(function () {
                 for(i = 0; i < array.length; i++) {
                     eval('result.' + array[i].name + ' = array[' + i + '].value;');
                 }
-                eval(event.data.model.actions[event.data.q]).call(this, result, event.data.model.targets[q]);
+                var continueSubmit = perform.runBeforeFns(item, q);
+                if (continueSubmit) eval(event.data.model.actions[event.data.q]).call(this, result, event.data.model.targets[q]);
             });
         },
         bindRemote: function (item, q) {
             if(perform.verbose) console.log("Binding " + item.formids[q] + " submission " + item.object + " to " + item.actions[q] + " on " + item.events[q] + " via " + item.methods[q] + " using remote binding.");
             $(item.object).on(item.events[q], { model: item, q: q }, function (event) {
-                var continueSubmit = true;
                 //Run the before functions
-                if (item.befores !== undefined) {
-                    var bFunctions = item.befores[q].split(perform.split.secondary);
-                    var bParams = item.beforeparams[q].split(perform.split.secondary);
-                    for(var i in bFunctions){
-                        var fn = bFunctions[i];
-                        var returnVal;
-                        if (fn !== ''){
-                            var params = bParams[i].split(perform.split.tertiary);
-                            if (params === undefined || params == '') returnVal = window[fn]();
-                            else returnVal = window[fn].apply(this, params);
-                        }
-                        if(returnVal === false) continueSubmit = false;
-                    }
-                }
+                var continueSubmit = perform.runBeforeFns(item, q);
                 //bypass
                 if (continueSubmit)
                 {
@@ -117,55 +104,82 @@ $(function () {
                             var target = item.targets[q];
                             if(target !== undefined || target != "")$(target).html(data);
                             //Run the success functions
-                            if (item.successfns !== undefined) {
-                                var sFunctions = item.successfns[q].split(perform.split.secondary);
-                                var sParams = item.successfnparams[q].split(perform.split.secondary);
-                                for(var i in sFunctions){
-                                    var fn = sFunctions[i];
-                                    if (fn !== ''){
-                                        var params = sParams[i].split(perform.split.tertiary);
-                                        if (params === undefined || params == '') window[fn]();
-                                        else window[fn].apply(this, params);
-                                    }
-                                }
-                            }
+                            perform.runSuccessFns(item, q);
                             if (perform.verbose) console.log("Form submitted successfully.");
                         },
                         complete: function(){
                             //Run the after functions
-                            if (item.afters !== undefined) {
-                                var aFunctions = item.afters[q].split(perform.split.secondary);
-                                var aParams = item.afterparams[q].split(perform.split.secondary);
-                                for(var i in aFunctions){
-                                    var fn = aFunctions[i];
-                                    if (fn !== ''){
-                                        var params = aParams[i].split(perform.split.tertiary);
-                                        if (params === undefined || params == '') window[fn]();
-                                        else window[fn].apply(this, params);
-                                    }
-                                }
-                            }
+                            perform.runAfterFns(item, q);
                         },
                         error: function(jqXHR, textStatus, errorThrown){
                             //Run the error functions
-                            if (item.errorfns !== undefined) {
-                                var eFunctions = item.errorfns[q].split(perform.split.secondary);
-                                var eParams = item.errorfnparams[q].split(perform.split.secondary);
-                                for(var i in eFunctions){
-                                    var fn = eFunctions[i];
-                                    if (fn !== ''){
-                                        var params = eParams[i].split(perform.split.tertiary);
-                                        if (params === undefined || params == '') window[fn]();
-                                        else window[fn].apply(this, params);
-                                    }
-                                }
-                            }
+                            perform.runErrorFns(item, q);
                             if(perform.verbose) console.log(errorThrown);
                         }
                     });
                 }
             });
 
+        },
+        runBeforeFns: function(item, q){
+            var continueSubmit = true;
+            if (item.befores !== undefined) {
+                var bFunctions = item.befores[q].split(perform.split.secondary);
+                var bParams = item.beforeparams[q].split(perform.split.secondary);
+                for(var i in bFunctions){
+                    var fn = bFunctions[i];
+                    var returnVal;
+                    if (fn !== ''){
+                        var params = bParams[i].split(perform.split.tertiary);
+                        if (params === undefined || params == '') returnVal = window[fn]();
+                        else returnVal = window[fn].apply(this, params);
+                    }
+                    if(returnVal === false) continueSubmit = false;
+                }
+            }
+            return continueSubmit;
+        },
+        runAfterFns: function(item, q){
+            if (item.afters !== undefined) {
+                var aFunctions = item.afters[q].split(perform.split.secondary);
+                var aParams = item.afterparams[q].split(perform.split.secondary);
+                for(var i in aFunctions){
+                    var fn = aFunctions[i];
+                    if (fn !== ''){
+                        var params = aParams[i].split(perform.split.tertiary);
+                        if (params === undefined || params == '') window[fn]();
+                        else window[fn].apply(this, params);
+                    }
+                }
+            }
+        },
+        runSuccessFns: function(item, q){
+            if (item.successfns !== undefined) {
+                var sFunctions = item.successfns[q].split(perform.split.secondary);
+                var sParams = item.successfnparams[q].split(perform.split.secondary);
+                for(var i in sFunctions){
+                    var fn = sFunctions[i];
+                    if (fn !== ''){
+                        var params = sParams[i].split(perform.split.tertiary);
+                        if (params === undefined || params == '') window[fn]();
+                        else window[fn].apply(this, params);
+                    }
+                }
+            }
+        },
+        runErrorFns: function(item, q){
+            if (item.errorfns !== undefined) {
+                var eFunctions = item.errorfns[q].split(perform.split.secondary);
+                var eParams = item.errorfnparams[q].split(perform.split.secondary);
+                for(var i in eFunctions){
+                    var fn = eFunctions[i];
+                    if (fn !== ''){
+                        var params = eParams[i].split(perform.split.tertiary);
+                        if (params === undefined || params == '') window[fn]();
+                        else window[fn].apply(this, params);
+                    }
+                }
+            }
         },
         reset: function () {
             perform.collection = [];
