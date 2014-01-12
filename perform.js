@@ -24,24 +24,25 @@ $(function () {
             actions: [],
             methods: [],
             targets: [],
-            befores: [],
-            beforeparams: [],
-            afters: [],
-            afterparams: [],
-            successfns: [],
-            successfnparams: [],
-            errorfns: [],
-            errorfnparams: []
+            params: [],
+            //befores: [],
+            //beforeparams: [],
+            //afters: [],
+            //afterparams: [],
+            //successfns: [],
+            //successfnparams: [],
+            //errorfns: [],
+            //errorfnparams: []
         },
         //The perform collection to hold all of the models for the current page
         collection: [],
         current: {},
         verbose: true,
-        split: {
-            main: '|',
-            secondary: ';',
-            tertiary: ',',
-        },        
+        split: ',',//{
+            //main: '|',
+            //secondary: ';',
+            //tertiary: ',',
+        //},        
         parse: function () {
             $('[data-perform-events]').each(function () {             
                 var model = {
@@ -51,14 +52,15 @@ $(function () {
                     actions : perform.getActions($(this)),
                     methods : perform.getMethods($(this)),
                     targets : perform.getTargets($(this)),
-                    befores : perform.getBefores($(this)),
-                    beforeparams : perform.getBeforeParams($(this)),
-                    afters : perform.getAfters($(this)),
-                    afterparams : perform.getAfterParams($(this)),
-                    successfns : perform.getSuccessFns($(this)),
-                    successfnparams : perform.getSuccessFnParams($(this)),
-                    errorfns : perform.getErrorFns($(this)),
-                    errorfnparams : perform.getErrorFnParams($(this))
+                    params: perform.getParams($(this)),
+                    //befores : perform.getBefores($(this)),
+                    //beforeparams : perform.getBeforeParams($(this)),
+                    //afters : perform.getAfters($(this)),
+                    //afterparams : perform.getAfterParams($(this)),
+                    //successfns : perform.getSuccessFns($(this)),
+                    //successfnparams : perform.getSuccessFnParams($(this)),
+                    //errorfns : perform.getErrorFns($(this)),
+                    //errorfnparams : perform.getErrorFnParams($(this))
                 };
                 if(perform.verbose) perform.errorCheck(model);
                 perform.collection.push(model);
@@ -84,8 +86,9 @@ $(function () {
                 for(i = 0; i < array.length; i++) {
                     eval('result.' + array[i].name + ' = array[' + i + '].value;');
                 }
-                var continueSubmit = perform.runBeforeFns(item, q);
-                if (continueSubmit) eval(event.data.model.actions[event.data.q]).call(this, result, event.data.model.targets[q]);
+                perform.runBefores(item, q, i)
+                //var continueSubmit = perform.runBeforeFns(item, q);
+                /*if (continueSubmit)*/ eval(event.data.model.actions[event.data.q]).call(this, result, event.data.model.targets[q], params);
             });
         },
         bindRemote: function (item, q) {
@@ -121,7 +124,7 @@ $(function () {
             });
 
         },
-        runBeforeFns: function(item, q){
+        /*runBeforeFns: function(item, q){
             var continueSubmit = true;
             if (item.befores !== undefined) {
                 var bFunctions = item.befores[q].split(perform.split.secondary);
@@ -138,8 +141,8 @@ $(function () {
                 }
             }
             return continueSubmit;
-        },
-        runAfterFns: function(item, q){
+        },*/
+        /*runAfterFns: function(item, q){
             if (item.afters !== undefined) {
                 var aFunctions = item.afters[q].split(perform.split.secondary);
                 var aParams = item.afterparams[q].split(perform.split.secondary);
@@ -152,8 +155,8 @@ $(function () {
                     }
                 }
             }
-        },
-        runSuccessFns: function(item, q){
+        },*/
+        /*runSuccessFns: function(item, q){
             if (item.successfns !== undefined) {
                 var sFunctions = item.successfns[q].split(perform.split.secondary);
                 var sParams = item.successfnparams[q].split(perform.split.secondary);
@@ -166,8 +169,8 @@ $(function () {
                     }
                 }
             }
-        },
-        runErrorFns: function(item, q){
+        },*/
+        /*runErrorFns: function(item, q){
             if (item.errorfns !== undefined) {
                 var eFunctions = item.errorfns[q].split(perform.split.secondary);
                 var eParams = item.errorfnparams[q].split(perform.split.secondary);
@@ -180,59 +183,64 @@ $(function () {
                     }
                 }
             }
-        },
+        },*/
         reset: function () {
             perform.collection = [];
         },
         getForms: function (submit) {
             var attr = submit.attr('data-perform-forms');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-forms attribute is present.");
-            return attr ? attr.split(perform.split.tertiary) : [];
+            return attr ? attr.split(perform.split) : [];
         },
         getEvents: function (submit) {
             var attr = submit.attr('data-perform-events');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-events attribute is present.");
-            return attr ? attr.split(perform.split.tertiary) : [];
+            return attr ? attr.split(perform.split) : [];
         },
         getActions: function (submit) {
             var attr = submit.attr('data-perform-actions');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-actions attribute is present.");
-            return attr ? attr.split(perform.split.tertiary) : [];
+            return attr ? attr.split(perform.split) : [];
         },
         getMethods: function (submit) {
             var attr = submit.attr('data-perform-methods');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-methods attribute is present.");
-            return attr ? attr.split(perform.split.tertiary) : [];
+            return attr ? attr.split(perform.split) : [];
         },
         getTargets: function (submit) {
             var attr = submit.attr('data-perform-targets');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-targets attribute is present.");
-            return attr ? attr.split(perform.split.tertiary) : [];
+            return attr ? attr.split(perform.split) : [];
         },
-        getBefores: function (submit) {
+        getParams: function (submit) {
+            var attr = submit.attr('data-perform-params');
+            if (perform.verbose && (!attr || attr === undefined)) return;
+            return attr ? attr.split(perform.split) : [];
+        },
+        /*getBefores: function (submit) {
             return submit.attr('data-perform-bfns') ? submit.attr('data-perform-bfns').split(perform.split.main) : undefined;
-        },
-        getBeforeParams: function (submit) {
+        },*/
+        /*getBeforeParams: function (submit) {
             return submit.attr('data-perform-bparams') ? submit.attr('data-perform-bparams').split(perform.split.main) : undefined;
-        },
-        getAfters: function (submit) {
+        },*/
+        /*getAfters: function (submit) {
             return submit.attr('data-perform-afns') ? submit.attr('data-perform-afns').split(perform.split.main) : undefined;
-        },
-        getAfterParams: function (submit) {
+        },*/
+        /*getAfterParams: function (submit) {
             return submit.attr('data-perform-aparams') ? submit.attr('data-perform-aparams').split(perform.split.main) : undefined;
-        },
-        getSuccessFns: function (submit) {
+        },*/
+        /*getSuccessFns: function (submit) {
             return submit.attr('data-perform-sfns') ? submit.attr('data-perform-sfns').split(perform.split.main) : undefined;
-        },
-        getSuccessFnParams: function (submit) {
+        },*/
+        /*getSuccessFnParams: function (submit) {
             return submit.attr('data-perform-sparams') ? submit.attr('data-perform-sparams').split(perform.split.main) : undefined;
-        },
-        getErrorFns: function (submit) {
+        },*/
+        /*getErrorFns: function (submit) {
             return submit.attr('data-perform-efns') ? submit.attr('data-perform-efns').split(perform.split.main) : undefined;
-        },
-        getErrorFnParams: function (submit) {
+        },*/
+        /*getErrorFnParams: function (submit) {
             return submit.attr('data-perform-eparams') ? submit.attr('data-perform-eparams').split(perform.split.main) : undefined;
-        },
+        },*/
         errorCheck: function(model) {
             var maxCount = 0;
             //Get the max amount of an array
@@ -241,7 +249,7 @@ $(function () {
             model.actions.length >= maxCount ? maxCount = model.actions.length: false;
             model.methods.length >= maxCount ? maxCount = model.methods.length: false;
             model.targets.length >= maxCount ? maxCount = model.targets.length: false;
-            if(model.befores !== undefined) model.befores.length >= maxCount ? maxCount = model.befores.length: false;
+            /*if(model.befores !== undefined) model.befores.length >= maxCount ? maxCount = model.befores.length: false;
             if(model.beforeparams !== undefined) model.beforeparams.length >= maxCount ? maxCount = model.beforeparams.length: false;
             if(model.afters !== undefined) model.afters.length >= maxCount ? maxCount = model.afters.length: false;
             if(model.afterparams !== undefined) model.afterparams.length >= maxCount ? maxCount = model.afterparams.length: false;
@@ -249,18 +257,18 @@ $(function () {
             if(model.successfnparams !== undefined) model.successfnparams.length >= maxCount ? maxCount = model.successfnparams.length: false;
             if(model.errorfns !== undefined) model.errorfns.length >= maxCount ? maxCount = model.errorfns.length: false;
             if(model.errorfnparams !== undefined) model.errorfnparams.length >= maxCount ? maxCount = model.errorfnparams.length: false;
-            //Log the errors of the improper index count
+*/            //Log the errors of the improper index count
             if (model.formids.length < maxCount) console.error("Invalid data-perform-forms index count: " + model.formids.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split + "'.");
             if (model.events.length < maxCount) console.error("Invalid data-perform-events index count: " + model.events.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split + "'.");
             if (model.actions.length < maxCount) console.error("Invalid data-perform-actions index count: " + model.actions.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split + "'.");
             if (model.methods.length < maxCount) console.error("Invalid data-perform-methods index count: " + model.methods.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
+            + ". Please  make sure it is split properly with the character '" + perform.split + "'.");
             if (model.targets.length < maxCount) console.error("Invalid data-perform-targets index count: " + model.targets.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
-            if (model.befores !== undefined && model.befores.length < maxCount) console.error("Invalid data-perform-bfns index count: " + model.befores.length + " of total: " + maxCount
+            + ". Please  make sure it is split properly with the character '" + perform.split + "'.");
+            /*if (model.befores !== undefined && model.befores.length < maxCount) console.error("Invalid data-perform-bfns index count: " + model.befores.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.beforeparams !== undefined && model.beforeparams.length < maxCount) console.error("Invalid data-perform-bparams index count: " + model.beforeparams.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character ';'.");
@@ -275,7 +283,7 @@ $(function () {
             if (model.errorfns !== undefined && model.errorfns.length < maxCount) console.error("Invalid data-perform-efns index count: " + model.errorfns.length + " of total: " + maxCount
             + ". Please  make sure it is split properly with the character '" + perform.splitchar + "'.");
             if (model.errorfnparams !== undefined && model.errorfnparams.length < maxCount) console.error("Invalid data-perform-eparams index count: " + model.errorfnparams.length + " of total: " + maxCount
-            + ". Please  make sure it is split properly with the character ';'.");
+            + ". Please  make sure it is split properly with the character ';'.");*/
         }
     };
     perform.parse();
