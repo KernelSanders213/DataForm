@@ -19,108 +19,164 @@ $(function () {
         //The perform model
         model: {
             object: {},
+            event: "",
             formids: [],
-            events: [],
             actions: [],
             methods: [],
             targets: [],
             params: [],
-            //befores: [],
-            //beforeparams: [],
-            //afters: [],
-            //afterparams: [],
-            //successfns: [],
-            //successfnparams: [],
-            //errorfns: [],
-            //errorfnparams: []
+            locals: [],
+            extras: {
+                befores: [],
+                afters: [],
+                successes: [],
+                errors: []
+            }
         },
         //The perform collection to hold all of the models for the current page
         collection: [],
         current: {},
         verbose: true,
-        split: ',',//{
-            //main: '|',
-            //secondary: ';',
-            //tertiary: ',',
-        //},        
+        split: ',',       
         parse: function () {
             $('[data-perform-events]').each(function () {             
-                var model = {
-                    object : $(this),
-                    formids : perform.getForms($(this)),
-                    events : perform.getEvents($(this)),
-                    actions : perform.getActions($(this)),
-                    methods : perform.getMethods($(this)),
-                    targets : perform.getTargets($(this)),
-                    params: perform.getParams($(this)),
-                    //befores : perform.getBefores($(this)),
-                    //beforeparams : perform.getBeforeParams($(this)),
-                    //afters : perform.getAfters($(this)),
-                    //afterparams : perform.getAfterParams($(this)),
-                    //successfns : perform.getSuccessFns($(this)),
-                    //successfnparams : perform.getSuccessFnParams($(this)),
-                    //errorfns : perform.getErrorFns($(this)),
-                    //errorfnparams : perform.getErrorFnParams($(this))
-                };
+                //arrays to hold the values for parsing
+                var i,j, evt, gtg, events = [], formids = [], actions = [], methods = [], targets = [], params = [], completed = [], item = {}, model = {};
+                //Load the parsing arrays
+                events = perform.getEvents;
+                formids = perform.getForms;
+                actions = perform.getActions;
+                methods = perform.getMethods;
+                targets = perform.getTargets;
+                params = perform.getParams;
+                //Transform the arrays to load the binding model
+                for(i = 0; i < events.length; i++) {
+                    evt = perform.nextEvent(events, completed);
+                    if(evt === undefined) return;
+                    model.object = $(this);
+                    model.event = evt,
+                    for(j = 0; j < methods.length; j++) {
+                        if(events[j] !== evt) continue;
+                        item = {
+                            formid: formids[j],
+                            action: actions[j],
+                            method: methods[j],
+                            target: targets[j],
+                            params : params[j]
+                        };
+                        if(item.method === "before") model.extras.befores.push(item);
+                        else if(item.method === "after") model.extras.afters.push(item);
+                        else if(item.method === "success") model.extras.successes.push(item);
+                        else if(item.method === "error") model.extras.errors.push(item);
+                        else if(item.method === "local") model.locals.push(item);
+                        else {
+                            model.formids.push(item.formid);
+                            model.actions.push(item.action);
+                            model.methods.push(item.method);
+                            model.targets.push(item.target);
+                            model.params.push(item.params);
+                        }
+                    }
+                }
                 if(perform.verbose) perform.errorCheck(model);
                 perform.collection.push(model);
             });
             perform.binder();
         },
+        nextEvent = function (events, completed) {
+            var i,j,evt,gtg = true;    
+            for(i = 0; i < events.length; i++) {
+                evt = events[i];
+                for(j = 0; j < completed.length; j++) {
+                    if(evt === completed[j]) gtg = false;
+                }
+                if(gtg) return evt;
+            }
+            return undefined;
+        },
         binder: function () {
-            for (var i = 0; i < perform.collection.length; i++) {
+            var i,j;
+            for (i = 0; i < perform.collection.length; i++) {
                 perform.current = perform.collection[i];
-                for (var q = 0; q < perform.current.events.length; q++) {
-                    if(perform.current.methods[q] === "local") {
-                        perform.bindLocal(perform.current, q, i);
-                    } else {
-                        perform.bindRemote(perform.current, q, i);
-                    }
+                for(j = 0; j < perform.current.locals.length; j++) {
+                    perform.bindLocal(perform.current, j);   
+                }
+                for(j = 0; j < perform.current.methods.length; j++) {
+                    perform.bindRemote(perform.current, j);
                 }
             }
         },
-        bindLocal: function (item, q, i) {
+        bindLocal: function (item, q, extras) {
             if(perform.verbose) console.log("Binding " + item.formids[q] + " submission using " + item.object + " to " + item.actions[q] + " on " + item.events[q] + " via " + item.methods[q] + " using local binding."); 
             item.object.on(item.events[q], { model: item, q: q }, function (event) {  
-                var array = $(event.data.model.formids[q]).serializeArray(), result = {}, i = 0;
+                var model = event.data.model, q = event.data.q, array = $(model.formids[j]).serializeArray(), result = {}, i = 0, success;
                 for(i = 0; i < array.length; i++) {
                     eval('result.' + array[i].name + ' = array[' + i + '].value;');
                 }
-                perform.runBefores(item, q, i)
-                //var continueSubmit = perform.runBeforeFns(item, q);
-                /*if (continueSubmit)*/ eval(event.data.model.actions[event.data.q]).call(this, result, event.data.model.targets[q], params);
+                //Run the befores
+                for(j = 0; j < model.extras.befores.length; j++) {
+                    if(model.extras.befores[j].target === model.locals[q].target && model.extras.befores[j].formid === model.locals[q].formid) {
+                        eval(model.extras.befores[j].action).call(this, result, model.extras.befores[j].target, eval(model.extras.befores[j].params));
+                    }
+                }
+                //Submit the form
+                success = eval(model.locals[q].action).call(this, result, model.targets[q], eval(model.params[q]));
+                //Run success and error functions
+                if(success) {
+                    for(j = 0; j < model.extras.successes.length; j++) {
+                        if(model.extras.successes[j].target === model.locals[q].target && model.extras.successes[j].formid === model.locals[q].formid) {
+                            eval(model.extras.successes[j].action).call(this, result, model.extras.successes[j].target, eval(model.extras.successes[j].params));
+                        }
+                    }
+                } else {
+                    for(j = 0; j < model.extras.errors.length; j++) {
+                        if(model.extras.errors[j].target === model.locals[q].target && model.extras.errors[j].formid === model.locals[q].formid) {
+                            eval(model.extras.errors[j].action).call(this, result, model.extras.errors[j].target, eval(model.extras.errors[j].params)); 
+                        }
+                    }
+                }
+                //Run the after functions
+                for(j = 0; j < model.extras.afters.length; j++) {
+                    if(model.extras.afters[j].target === model.locals[q].target && model.extras.afters[j].formid === model.locals[q].formid) {
+                        eval(model.extras.afters[j].action).call(this, result, model.extras.afters[j].target, eval(model.extras.afters[j].params));   
+                    }
+                }
             });
         },
         bindRemote: function (item, q) {
             if(perform.verbose) console.log("Binding " + item.formids[q] + " submission " + item.object + " to " + item.actions[q] + " on " + item.events[q] + " via " + item.methods[q] + " using remote binding.");
             $(item.object).on(item.events[q], { model: item, q: q }, function (event) {
                 //Run the before functions
-                var continueSubmit = perform.runBeforeFns(item, q);
-                //bypass
-                if (continueSubmit)
-                {
-                    $.ajax({
-                        url: event.data.model.actions[q],
-                        type: event.data.model.methods[q],
-                        data: $(event.data.model.formids[q]).serializeArray(),
-                        success: function (data, textStatus, jqXHR) {
-                            var target = item.targets[q];
-                            if(target !== undefined || target != "")$(target).html(data);
-                            //Run the success functions
-                            perform.runSuccessFns(item, q);
-                            if (perform.verbose) console.log("Form submitted successfully.");
-                        },
-                        complete: function(){
-                            //Run the after functions
-                            perform.runAfterFns(item, q);
-                        },
-                        error: function(jqXHR, textStatus, errorThrown){
-                            //Run the error functions
-                            perform.runErrorFns(item, q);
-                            if(perform.verbose) console.log(errorThrown);
+                var i, model = event.data.model, q = event.data.q;
+                $.ajax({
+                    url: model.actions[q],
+                    type: model.methods[q],
+                    data: $(model.formids[q]).serializeArray(),
+                    beforeSend: function () {
+                        for(i = 0; i < model.extras.befores.length; i++) {
+                            var bf = model.extras.befores[i];
+                            if(bf.target === model.targets[q] && bf.formid === model.formids[q]) {
+                                   
+                            }
                         }
-                    });
-                }
+                    },
+                    success: function (data, textStatus, jqXHR) {
+                        var target = model.targets[q];
+                        if(target !== undefined || target != "")$(target).html(data);
+                        //Run the success functions
+                        perform.runSuccessFns(item, q);
+                        if (perform.verbose) console.log("Form submitted successfully.");
+                    },
+                    complete: function(){
+                        //Run the after functions
+                        perform.runAfterFns(item, q);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){
+                        //Run the error functions
+                        perform.runErrorFns(item, q);
+                        if(perform.verbose) console.log(errorThrown);
+                    }
+                });
             });
 
         },
@@ -187,46 +243,42 @@ $(function () {
         reset: function () {
             perform.collection = [];
         },
-        getForms: function (submit) {
+        getEvents: function (submit) { //No error checking needed here as if the attribute doesn't exist, then parsing will not take place.
+            var attr = submit.attr('data-perform-events');
+            return attr.split(perform.split);
+        },
+        getForms: function (submit, event) {
             var attr = submit.attr('data-perform-forms');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-forms attribute is present.");
             return attr ? attr.split(perform.split) : [];
         },
-        getEvents: function (submit) {
-            var attr = submit.attr('data-perform-events');
-            if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-events attribute is present.");
-            return attr ? attr.split(perform.split) : [];
-        },
-        getActions: function (submit) {
+        getActions: function (submit, event) {
             var attr = submit.attr('data-perform-actions');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-actions attribute is present.");
             return attr ? attr.split(perform.split) : [];
         },
-        getMethods: function (submit) {
+        getMethods: function (submit, event) {
             var attr = submit.attr('data-perform-methods');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-methods attribute is present.");
             return attr ? attr.split(perform.split) : [];
         },
-        getTargets: function (submit) {
+        getTargets: function (submit, event) {
             var attr = submit.attr('data-perform-targets');
             if (perform.verbose && (!attr || attr === undefined)) console.error("No data-perform-targets attribute is present.");
             return attr ? attr.split(perform.split) : [];
         },
-        getParams: function (submit) {
+        getParams: function (submit, event) {
             var attr = submit.attr('data-perform-params');
             if (perform.verbose && (!attr || attr === undefined)) return;
             return attr ? attr.split(perform.split) : [];
         },
-        /*getBefores: function (submit) {
+        /*getBefores: function (submit, event) {
             return submit.attr('data-perform-bfns') ? submit.attr('data-perform-bfns').split(perform.split.main) : undefined;
         },*/
-        /*getBeforeParams: function (submit) {
-            return submit.attr('data-perform-bparams') ? submit.attr('data-perform-bparams').split(perform.split.main) : undefined;
-        },*/
-        /*getAfters: function (submit) {
+        /*getAfters: function (submit, event) {
             return submit.attr('data-perform-afns') ? submit.attr('data-perform-afns').split(perform.split.main) : undefined;
         },*/
-        /*getAfterParams: function (submit) {
+        /*getAfterParams: function (submit, event) {
             return submit.attr('data-perform-aparams') ? submit.attr('data-perform-aparams').split(perform.split.main) : undefined;
         },*/
         /*getSuccessFns: function (submit) {
