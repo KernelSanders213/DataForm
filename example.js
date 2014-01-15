@@ -1,5 +1,5 @@
 var local = {
-	process: function (request, target) {
+	process: function (request, target, params) {
         $(target).html(
             $('<p/>').append(
                 $('<b/>').html(request.head + ": "),
@@ -7,10 +7,14 @@ var local = {
             )
         );
     },
-	second: function (request, target) {
+	second: function (request, target, params) {
 		alert(request.head + ": " + request.text);
+        return false;
 	},
-    blur: function (request) {
+    blur: function (request, target, params) {
         $('#test-target').empty();   
+    },
+    before: function (request, target, params) {
+        alert("Error!");   
     }
 }

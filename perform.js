@@ -121,18 +121,18 @@ $(function () {
                 //Submit the form
                 success = eval(model.locals[q].action).call(this, request, model.locals[q].target, eval(model.params[q]));
                 //Run success and error functions
-                if(success) {
-                    for(j = 0; j < model.extras.successes.length; j++) {
-                        ss = model.extras.successes[j];
-                        if(ss.target === model.locals[q].target && ss.formid === model.locals[q].formid) {
-                            eval(ss.action).call(this, request, ss.target, eval(ss.params));
-                        }
-                    }
-                } else {
+                if(success === false) {
                     for(j = 0; j < model.extras.errors.length; j++) {
                         er = model.extras.errors[j];
                         if(er.target === model.locals[q].target && er.formid === model.locals[q].formid) {
                             eval(er.action).call(this, request, er.target, eval(er.params)); 
+                        }
+                    }
+                } else {
+                    for(j = 0; j < model.extras.successes.length; j++) {
+                        ss = model.extras.successes[j];
+                        if(ss.target === model.locals[q].target && ss.formid === model.locals[q].formid) {
+                            eval(ss.action).call(this, request, ss.target, eval(ss.params));
                         }
                     }
                 }

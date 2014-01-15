@@ -12,7 +12,7 @@
 			<input type="text" name="head" placeholder="Header Text"><br>
 			<textarea id="change" name="text" placeholder="Body Text"></textarea><br>
 		</form>
-		<button type="button" data-perform-events="click,click" data-perform-forms="#test-form,#test-form" data data-perform-actions="local.process,local.second" data-perform-targets="#test-target3,#test-target3" data-perform-methods="local,local">Process Form Locally</button><br>
+		<button type="button" data-perform-events="click,click,click" data-perform-forms="#test-form,#test-form,#test-form" data data-perform-actions="local.process,local.second,local.before" data-perform-targets="#test-target3,#test-target3,#test-target3" data-perform-methods="local,local,error">Process Form Locally</button><br>
 		<button type="button" data-perform-events="mouseenter,click,mouseleave" data-perform-forms="#test-form,#test-form,#test-form" data-perform-actions="http://bluelineapps.net/php/performtest1.php,http://bluelineapps.net/php/performtest2.php,local.blur" data-perform-methods="get,post,local" data-perform-targets="#test-target,#test-target2,#test-target">Process Form Remotely</button>
 		<div id="test-target">
 			Hover over the "Process Form Remotely" button to submit the form and change this area.
