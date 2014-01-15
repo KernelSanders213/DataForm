@@ -11,6 +11,7 @@
  * Version:  0.6
  * By: Justin King and Scott Robinson
  *****************************************/
+/*jslint devel: true, ass: true, continue: true, evil: true, plusplus: true, white: true */
 var perform = perform || {};
 
 $(function () {
@@ -30,7 +31,7 @@ $(function () {
                 befores: [],
                 afters: [],
                 successes: [],
-                errors: [],
+                errors: []
             };
         },
         //The perform collection to hold all of the models for the current page
@@ -41,7 +42,7 @@ $(function () {
         parse: function () {
             $('[data-perform-events]').each(function () {             
                 //arrays to hold the values for parsing
-                var i,j, evt, events = [], formids = [], actions = [], methods = [], targets = [], params = [], completed = [], item = {};
+                var i,j,evt, completed = [], events = [], formids = [], actions = [], methods = [], targets = [], params = [], item = {}, model = {};
                 //Load the parsing arrays
                 events = perform.getEvents($(this));
                 formids = perform.getForms($(this));
@@ -51,7 +52,7 @@ $(function () {
                 params = perform.getParams($(this));
                 //Transform the arrays to load the binding model
                 for(i = 0; i < events.length; i++) {
-                    var model = new perform.model();
+                    model = new perform.model();
                     evt = perform.nextEvent(events, completed);
                     if(evt === undefined) {return;}
                     model.object = $(this);
@@ -80,18 +81,17 @@ $(function () {
                     }
                     //if(perform.verbose) {/*perform.errorCheck(model);*/}
                     perform.collection.push(model);
+                    completed.push(evt);
                 }
             });
             perform.binder();
         },
         nextEvent: function (events, completed) {
-            var i,j,evt,gtg = true;    
+            var i,j,evt,index;   
             for(i = 0; i < events.length; i++) {
                 evt = events[i];
-                for(j = 0; j < completed.length; j++) {
-                    if(evt === completed[j]) {gtg = false;}
-                }
-                if(gtg) {return evt;}
+                index = completed.indexOf(evt);
+                if(index === -1) {return evt;}
             }
             return undefined;
         },
@@ -108,29 +108,29 @@ $(function () {
             }
         },
         bindLocal: function (item, q) {
-            if(perform.verbose) {console.log("Binding " + item.locals[q].formid + " submission using " + item.locals[q].object + " to " + item.locals[q].action + " on " + item.locals[q].event + " via " + item.locals[q].method + " using local binding.");}
-            item.object.on(item.locals[q].event, { model: item, q: q }, function (event) {  
-                var j, model = event.data.model, q = event.data.q, array = $(model.locals[q].formid).serializeArray(), request = perform.buildRequestObject(array), success;
+            if(perform.verbose) {console.log("Binding " + item.locals[q].formid + " submission using " + item.object + " to " + item.locals[q].action + " on " + item.event + " via " + item.locals[q].method + " using local binding.");}
+            item.object.on(item.event, { model: item, q: q }, function (event) {  
+                var j, model = event.data.model, q = event.data.q, array = $(model.locals[q].formid).serializeArray(), request = perform.buildRequestObject(array), success, bf = {}, ss = {}, er = {}, af = {};
                 //Run the befores
                 for(j = 0; j < model.extras.befores.length; j++) {
-                    var bf = model.extras.befores[j];
+                    bf = model.extras.befores[j];
                     if(bf.target === model.locals[q].target && bf.formid === model.locals[q].formid) {
                         eval(bf.action).call(this, request, bf.target, eval(bf.params));
                     }
                 }
                 //Submit the form
-                success = eval(model.locals[q].action).call(this, request, model.targets[q], eval(model.params[q]));
+                success = eval(model.locals[q].action).call(this, request, model.locals[q].target, eval(model.params[q]));
                 //Run success and error functions
                 if(success) {
                     for(j = 0; j < model.extras.successes.length; j++) {
-                        var ss = model.extras.successes[j];
+                        ss = model.extras.successes[j];
                         if(ss.target === model.locals[q].target && ss.formid === model.locals[q].formid) {
                             eval(ss.action).call(this, request, ss.target, eval(ss.params));
                         }
                     }
                 } else {
                     for(j = 0; j < model.extras.errors.length; j++) {
-                        var er = model.extras.errors[j];
+                        er = model.extras.errors[j];
                         if(er.target === model.locals[q].target && er.formid === model.locals[q].formid) {
                             eval(er.action).call(this, request, er.target, eval(er.params)); 
                         }
@@ -138,7 +138,7 @@ $(function () {
                 }
                 //Run the after functions
                 for(j = 0; j < model.extras.afters.length; j++) {
-                    var af = model.extras.afters[j];
+                    af = model.extras.afters[j];
                     if(af.target === model.locals[q].target && af.formid === model.locals[q].formid) {
                         eval(af.action).call(this, request, af.target, eval(af.params));   
                     }
@@ -149,14 +149,14 @@ $(function () {
             if(perform.verbose) {console.log("Binding " + item.formids[q] + " submission " + item.object + " to " + item.actions[q] + " on " + item.event + " via " + item.methods[q] + " using remote binding.");}
             $(item.object).on(item.event, { model: item, q: q }, function (event) {
                 //Run the before functions
-                var i, model = event.data.model, q = event.data.q, array = $(model.formids[q]).serializeArray(), request = perform.buildRequestObject(array);
+                var i, model = event.data.model, q = event.data.q, array = $(model.formids[q]).serializeArray(), request = perform.buildRequestObject(array), bf = {}, ss = {}, er = {}, af = {};
                 $.ajax({
                     url: model.actions[q],
                     type: model.methods[q],
                     data: $(model.formids[q]).serializeArray(),
                     beforeSend: function () {
                         for(i = 0; i < model.extras.befores.length; i++) {
-                            var bf = model.extras.befores[i];
+                            bf = model.extras.befores[i];
                             if(bf.target === model.targets[q] && bf.formid === model.formids[q]) {
                                 eval(bf.action).call(this, request, bf.target, eval(bf.params));
                             }
@@ -167,7 +167,7 @@ $(function () {
                         if(target !== undefined || target !== "") {$(target).html(data);}
                         //Run the success functions
                         for(i = 0; i < model.extras.successes.length; i++) {
-                            var ss = model.extras.successes[i];
+                            ss = model.extras.successes[i];
                             if(ss.target === model.targets[q] && ss.formid === model.formids[q]) {
                                 eval(ss.action).call(this, request, ss.target, eval(ss.params));
                             }
@@ -176,7 +176,7 @@ $(function () {
                     },
                     error: function(jqXHR, textStatus, errorThrown){
                         for(i = 0; i < model.extras.errors.length; i++) {
-                            var er = model.extras.errors[i];
+                            er = model.extras.errors[i];
                             if(er.target === model.targets[q] && er.formid === model.formids[q]) {
                                 eval(er.action).call(this, request, er.target, eval(er.params));   
                             }
@@ -185,7 +185,7 @@ $(function () {
                     },
                     complete: function(){
                         for(i = 0; i < model.extras.afters.length; i++) {
-                            var af = model.extras.afters[i];
+                            af = model.extras.afters[i];
                             if(af.target === model.targets[q] && af.formid === model.formids[q]) {
                                 eval(af.action).call(this, request, af.target, eval(af.params));
                             }
